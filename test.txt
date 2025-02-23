@@ -1,4 +1,4 @@
-(lang dune 3.17)
+(lang dune 3.9)
 
 (name oasis)
 
@@ -11,7 +11,7 @@
 
 (maintainers "Charles Averill")
 
-(license MIT)
+(license LICENSE)
 
 (documentation https://github.com/CharlesAverill/oasis)
 
@@ -20,10 +20,9 @@
  (synopsis "OCaml needs Another Standard lIbrary")
  (description "Another standard library for ocaml, just for fun")
  (depends
-  (ocaml
-   (>= 5.3.0))
-  (dune
-   (>= 3.17))
+  ocaml
+  dune
   (alcotest :with-test)
   (ocamlformat :with-test)
-  (odoc :with-doc)))
+  (odoc :with-doc)
+  uutf))

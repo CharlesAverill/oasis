@@ -4,16 +4,16 @@ synopsis: "OCaml needs Another Standard lIbrary"
 description: "Another standard library for ocaml, just for fun"
 maintainer: ["Charles Averill"]
 authors: ["Charles Averill"]
-license: "LICENSE"
+license: "MIT"
 homepage: "https://github.com/CharlesAverill/oasis"
 doc: "https://github.com/CharlesAverill/oasis"
 bug-reports: "https://github.com/CharlesAverill/oasis/issues"
 depends: [
-  "ocaml"
-  "dune" {>= "3.9"}
-  "alcotest"
-  "ocamlformat"
-  "odoc"
+  "ocaml" {>= "5.3.0"}
+  "dune" {>= "3.17" & >= "3.17"}
+  "alcotest" {with-test}
+  "ocamlformat" {with-test}
+  "odoc" {with-doc}
 ]
 build: [
   ["dune" "subst"] {dev}
