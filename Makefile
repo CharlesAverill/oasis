@@ -13,7 +13,7 @@ fmt:
 
 build: fmt
 	$(OPAM_EXEC) $(DUNE) build
-	$(OPAM EXEC) $(DUNE) format-dune-file dune-project > .dune-project-formatted
+	$(OPAM_EXEC) $(DUNE) format-dune-file dune-project > .dune-project-formatted
 	mv .dune-project-formatted dune-project
 
 install:
