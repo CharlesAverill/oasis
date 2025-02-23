@@ -42,7 +42,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          opam install . --deps-only --with-doc
+          opam install . --deps-only --with-doc --with-test
           eval $(opam env)
       
       - name: Build Documentation
