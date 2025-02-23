@@ -30,20 +30,17 @@ test: fmt
 testf: fmt
 	$(OPAM_EXEC) $(DUNE) runtest -f
 
-run: build
-	$(OPAM_EXEC) $(DUNE) exec -- PROJECT_NAME_
-
-debug: build
-	$(OPAM_EXEC) ocamldebug _build/default/PROJECT_NAME_/main.bc
+run: test
+	true
 
 DOCS_PATH=docs/
-DOCS_NAME=PROJECT_NAME_
-DOCS_DESCR=_PROJECT_DESCRIPTION_
+DOCS_NAME=oasis
+DOCS_DESCR=Another standard library for ocaml, just for fun
 DOCS_INDEX_TITLE=$(DOCS_NAME) - $(DOCS_DESCR)
 define DOCS_EMBED
 <meta content="$(DOCS_NAME)" property="og:title" />\
 <meta content="$(DOCS_DESCR)" property="og:description" />\
-<meta content="https://github.com/_AUTHOR_USERNAME_/PROJECT_NAME_" property="og:url" />
+<meta content="https://github.com/CharlesAverill/oasis" property="og:url" />
 endef
 
 cleandocs:
@@ -56,8 +53,8 @@ docs: cleandocs build
 	$(OPAM_EXEC) $(DUNE) build @doc
 	mv -f _build/default/_doc/_html/* $(DOCS_PATH)
 	rm -f $(DOCS_PATH)index.html
-	mv $(DOCS_PATH)PROJECT_NAME_/PROJECT_NAME_.html $(DOCS_PATH)index.html
-	mv $(DOCS_PATH)PROJECT_NAME_ $(DOCS_PATH)module
+	mv $(DOCS_PATH)oasis/oasis.html $(DOCS_PATH)index.html
+	mv $(DOCS_PATH)oasis $(DOCS_PATH)module
 	
 	@echo "Preparing Index\n--------------"
 	# Header
