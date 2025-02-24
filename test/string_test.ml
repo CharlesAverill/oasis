@@ -137,8 +137,9 @@ let () =
         ; test_case "Escaped dollar" `Quick test_template_escaped_dollar
         ; test_case "Trailing dollar" `Quick test_template_trailing_dollar
         ; test_case "Non-identifier characters" `Quick
-            test_template_non_identifier_characters
-        ; test_case "Capitalize empty" `Quick test_capitalize_empty
+            test_template_non_identifier_characters ] )
+    ; ( "Miscellaneous string functions"
+      , [ test_case "Capitalize empty" `Quick test_capitalize_empty
         ; test_case "Capitalize single char" `Quick test_capitalize_single_char
         ; test_case "Capitalize word" `Quick test_capitalize_word
         ; test_case "Capitalize already correct" `Quick
