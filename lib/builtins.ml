@@ -111,15 +111,16 @@ let rec base_number ?(first : bool = true) (prefix : string) (base : int)
     (* Reverse recursively-built string *)
     let nstr =
       (fun s ->
-        String.init (String.length s) (fun n ->
-            String.get s (String.length s - n - 1) ) )
+        Stdlib.String.init (Stdlib.String.length s) (fun n ->
+            Stdlib.String.get s (Stdlib.String.length s - n - 1) ) )
         nstr
     in
     (* Remove leading zeros *)
     let nstr =
-      if x != 0 && String.exists (( = ) '0') nstr then
-        let zero_idx = String.index nstr '0' in
-        String.sub nstr (zero_idx + 1) (String.length nstr - zero_idx - 1)
+      if x != 0 && Stdlib.String.exists (( = ) '0') nstr then
+        let zero_idx = Stdlib.String.index nstr '0' in
+        Stdlib.String.sub nstr (zero_idx + 1)
+          (Stdlib.String.length nstr - zero_idx - 1)
       else
         nstr
     in
@@ -135,9 +136,11 @@ let rec base_number ?(first : bool = true) (prefix : string) (base : int)
   ) else if x = 0 then
     "0"
   else
-    let digits = String.sub "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" 0 base in
-    let digit = String.get digits (x mod base) in
-    String.make 1 digit ^ base_number ~first:false prefix base (x / base)
+    let digits =
+      Stdlib.String.sub "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" 0 base
+    in
+    let digit = Stdlib.String.get digits (x mod base) in
+    Stdlib.String.make 1 digit ^ base_number ~first:false prefix base (x / base)
 
 (** Binary string of number *)
 let bin = base_number "0b" 2
@@ -151,43 +154,46 @@ let hex = base_number "0x" 16
 (** Get string represented by a unicode code point *)
 let chr (code_point : int) : string =
   if code_point < 0x80 then
-    String.make 1 (Char.unsafe_chr code_point)
+    Stdlib.String.make 1 (Char.unsafe_chr code_point)
   else if code_point < 0x800 then
-    String.make 2 (Char.unsafe_chr (0xC0 lor (code_point lsr 6)))
-    ^ String.make 1 (Char.unsafe_chr (0x80 lor (code_point land 0x3F)))
+    Stdlib.String.make 2 (Char.unsafe_chr (0xC0 lor (code_point lsr 6)))
+    ^ Stdlib.String.make 1 (Char.unsafe_chr (0x80 lor (code_point land 0x3F)))
   else if code_point < 0x10000 then
-    String.make 1 (Char.unsafe_chr (0xE0 lor (code_point lsr 12)))
-    ^ String.make 1 (Char.unsafe_chr (0x80 lor ((code_point lsr 6) land 0x3F)))
-    ^ String.make 1 (Char.unsafe_chr (0x80 lor (code_point land 0x3F)))
+    Stdlib.String.make 1 (Char.unsafe_chr (0xE0 lor (code_point lsr 12)))
+    ^ Stdlib.String.make 1
+        (Char.unsafe_chr (0x80 lor ((code_point lsr 6) land 0x3F)))
+    ^ Stdlib.String.make 1 (Char.unsafe_chr (0x80 lor (code_point land 0x3F)))
   else if code_point < 0x110000 then
-    String.make 1 (Char.unsafe_chr (0xF0 lor (code_point lsr 18)))
-    ^ String.make 1 (Char.unsafe_chr (0x80 lor ((code_point lsr 12) land 0x3F)))
-    ^ String.make 1 (Char.unsafe_chr (0x80 lor ((code_point lsr 6) land 0x3F)))
-    ^ String.make 1 (Char.unsafe_chr (0x80 lor (code_point land 0x3F)))
+    Stdlib.String.make 1 (Char.unsafe_chr (0xF0 lor (code_point lsr 18)))
+    ^ Stdlib.String.make 1
+        (Char.unsafe_chr (0x80 lor ((code_point lsr 12) land 0x3F)))
+    ^ Stdlib.String.make 1
+        (Char.unsafe_chr (0x80 lor ((code_point lsr 6) land 0x3F)))
+    ^ Stdlib.String.make 1 (Char.unsafe_chr (0x80 lor (code_point land 0x3F)))
   else
     invalid_arg "Invalid Unicode code point"
 
 (** Get unicode code point of a string *)
 let ord (s : string) : int =
-  let len = String.length s in
+  let len = Stdlib.String.length s in
   if len = 1 then
-    Char.code (String.get s 0)
+    Char.code (Stdlib.String.get s 0)
   else if len = 2 then
-    let byte1 = Char.code (String.get s 0) in
-    let byte2 = Char.code (String.get s 1) in
+    let byte1 = Char.code (Stdlib.String.get s 0) in
+    let byte2 = Char.code (Stdlib.String.get s 1) in
     ((byte1 land 0x1F) lsl 6) lor (byte2 land 0x3F)
   else if len = 3 then
-    let byte1 = Char.code (String.get s 0) in
-    let byte2 = Char.code (String.get s 1) in
-    let byte3 = Char.code (String.get s 2) in
+    let byte1 = Char.code (Stdlib.String.get s 0) in
+    let byte2 = Char.code (Stdlib.String.get s 1) in
+    let byte3 = Char.code (Stdlib.String.get s 2) in
     ((byte1 land 0x0F) lsl 12)
     lor ((byte2 land 0x3F) lsl 6)
     lor (byte3 land 0x3F)
   else if len = 4 then
-    let byte1 = Char.code (String.get s 0) in
-    let byte2 = Char.code (String.get s 1) in
-    let byte3 = Char.code (String.get s 2) in
-    let byte4 = Char.code (String.get s 3) in
+    let byte1 = Char.code (Stdlib.String.get s 0) in
+    let byte2 = Char.code (Stdlib.String.get s 1) in
+    let byte3 = Char.code (Stdlib.String.get s 2) in
+    let byte4 = Char.code (Stdlib.String.get s 3) in
     ((byte1 land 0x07) lsl 18)
     lor ((byte2 land 0x3F) lsl 12)
     lor ((byte3 land 0x3F) lsl 6)
@@ -372,7 +378,7 @@ let stdinput (prompt : string) : string = print_string prompt ; read_line ()
 (** Open an input file *)
 let open_in_file (mode : string) =
   open_in_gen
-    (String.fold_left
+    (Stdlib.String.fold_left
        (fun a c ->
          match c with
          | 'r' ->
@@ -390,7 +396,7 @@ let open_in_file (mode : string) =
 (** Open an output file *)
 let open_in_file (mode : string) =
   open_out_gen
-    (String.fold_left
+    (Stdlib.String.fold_left
        (fun a c ->
          match c with
          | 'w' ->

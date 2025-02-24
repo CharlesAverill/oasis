@@ -1,4 +1,4 @@
 (library
  (name oasis)
  (public_name oasis)
- (modules builtins logging))
+ (modules builtins string logging))

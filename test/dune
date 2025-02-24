@@ -1,3 +1,7 @@
 (test
- (name builtins)
+ (name builtins_test)
+ (libraries oasis alcotest))
+
+(test
+ (name string_test)
  (libraries oasis alcotest))
