@@ -1,4 +1,4 @@
-(** logging.ml - Custom logging and error messages *)
+(** Custom logging and error messages *)
 
 (** Represents the severity of a log statement *)
 type log_type =
