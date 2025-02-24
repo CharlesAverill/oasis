@@ -296,9 +296,6 @@ let is_lower (s : string) : bool =
 
     @param s The input string to convert.
     @return A new string with all alphabetic characters in lowercase.
-
-    @example lower "Hello WORLD!" = "hello world!"
-    @example lower "123_ABC_def" = "123_abc_def"
 *)
 let lower (s : string) : string =
   fold_left
@@ -363,9 +360,6 @@ let is_upper (s : string) : bool =
 
     @param s The input string to convert.
     @return A new string with all alphabetic characters in uppercase.
-
-    @example upper "Hello world!" = "HELLO WORLD!"
-    @example upper "abc_123_DEF" = "ABC_123_DEF"
 *)
 let upper (s : string) : string =
   fold_left
@@ -388,11 +382,7 @@ let upper (s : string) : string =
 
     @param sep The separator string to insert between each element.
     @param lst The list of strings to join.
-    @return A single concatenated string with [sep] between elements of [lst].
-    If [lst] is empty, returns an empty string.
-    
-    @example join ", " ["a"; "b"; "c"] = "a, b, c"
-    @example join "" ["hello"; "world"] = "helloworld"
+    @return A single concatenated string with [sep] between elements of [lst]. If [lst] is empty, returns an empty string.
 *)
 let join = concat
 
@@ -401,10 +391,6 @@ let join = concat
     @param s The input string to process.
     @param chars A string containing all characters to strip from the start of [s].
     @return A new string with the specified leading characters removed.
-
-    @example lstrip "   hello  " " " = "hello  "
-    @example lstrip "---example---" "-" = "example---"
-    @example lstrip "abcHello" "abc" = "Hello"
 *)
 let lstrip (s : string) (chars : string) : string =
   fst
@@ -423,10 +409,6 @@ let lstrip (s : string) (chars : string) : string =
     @param s The input string to process.
     @param chars A string containing all characters to strip from the end of [s].
     @return A new string with the specified trailing characters removed.
-
-    @example rstrip "   hello  " " " = "   hello"
-    @example rstrip "---example---" "-" = "---example"
-    @example rstrip "Helloabc" "abc" = "Hello"
 *)
 let rstrip (s : string) (chars : string) : string =
   reverse_string
@@ -453,11 +435,6 @@ let rstrip (s : string) (chars : string) : string =
     @param s The input string to partition.
     @param sep The separator string to search for.
     @return A tuple [(before, sep, after)].
-
-    @example partition "hello_world_example" "_" = ("hello", "_", "world_example")
-    @example partition "no-separator" "/" = ("no-separator", "", "")
-    @example partition "foo::bar::baz" "::" = ("foo", "::", "bar::baz")
-    @example partition "onlyseparator" "onlyseparator" = ("", "onlyseparator", "")
 *)
 let partition (s : string) (sep : string) : string * string * string =
   match find s sep with
@@ -475,10 +452,6 @@ let partition (s : string) (sep : string) : string * string * string =
     @param s The input string.
     @param prefix The prefix to remove.
     @return The string without the prefix if present, otherwise the original string.
-
-    @example remove_prefix "unhappy" "un" = "happy"
-    @example remove_prefix "happy" "un" = "happy"
-    @example remove_prefix "prefixprefix" "prefix" = "prefix"
 *)
 let remove_prefix (s : string) (prefix : string) : string =
   if starts_with s prefix then
@@ -493,10 +466,6 @@ let remove_prefix (s : string) (prefix : string) : string =
     @param s The input string.
     @param suffix The suffix to remove.
     @return The string without the suffix if present, otherwise the original string.
-
-    @example remove_suffix "running" "ing" = "runn"
-    @example remove_suffix "run" "ing" = "run"
-    @example remove_suffix "testsuffixsuffix" "suffix" = "testsuffix"
 *)
 let remove_suffix (s : string) (suffix : string) : string =
   if ends_with s suffix then
