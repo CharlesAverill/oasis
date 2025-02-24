@@ -1,7 +1,7 @@
 open Alcotest
 open Oasis.Builtins
 open Oasis.Builtins.Complex
-open Oasis.Builtins.Map
+open Oasis.Builtins.Dict
 
 let test_abs_neg () = (check int) "same int" 1 (abs (-1))
 
@@ -349,7 +349,7 @@ let test_update_map () =
 (* Access after update *)
 
 let test_update_existing_key () =
-  let m : (int, int) map = empty 0 in
+  let m : (int, int) dict = empty 0 in
   (* Update key 5 to 42, then update key 5 to 100 *)
   let m_updated = m.?[5] <- 42 in
   let m_updated2 = m_updated.?[5] <- 100 in

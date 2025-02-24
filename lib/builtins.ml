@@ -106,7 +106,7 @@ type complex = Complex.t
 (** Get number in bases up to 36 *)
 let rec base_number ?(first : bool = true) (prefix : string) (base : int)
     (x : int) : string =
-  if first then (
+  if first then
     let nstr = base_number ~first:false prefix base (abs x) in
     (* Reverse recursively-built string *)
     let nstr =
@@ -124,7 +124,6 @@ let rec base_number ?(first : bool = true) (prefix : string) (base : int)
       else
         nstr
     in
-    print_endline nstr ;
     (* Check for negative numbers *)
     ( if x < 0 then
         "-"
@@ -133,7 +132,7 @@ let rec base_number ?(first : bool = true) (prefix : string) (base : int)
     (* Add prefix *)
     ^ prefix
     ^ nstr
-  ) else if x = 0 then
+  else if x = 0 then
     "0"
   else
     let digits =
@@ -205,7 +204,7 @@ let ord (s : string) : int =
 let format = Printf.sprintf
 
 (** Maps/Dictionaries *)
-module Map = struct
+module Dict = struct
   type ('a, 'b) t = {f: 'a -> 'b; keys: 'a list; values: 'b list}
 
   (** Get operator *)
@@ -264,7 +263,7 @@ module Map = struct
     List.fold_left (fun a k -> a.?[k] <- m2.?[k]) m1 m2.keys
 end
 
-type ('a, 'b) map = ('a, 'b) Map.t
+type ('a, 'b) dict = ('a, 'b) Dict.t
 
 (** All items in list are true *)
 let all = List.for_all (fun x -> x)
@@ -323,7 +322,7 @@ let min_float (l : float list) : float option =
 let max_complex (l : complex list) : complex option =
   get_superlative l (fun x y -> Complex.absc (Complex.sub y x))
 
-(** Get range [a..b) *)
+(** Get range \[a..b) *)
 let range ?(start : int = 0) ?(step : int = 1) j =
   let rec aux n acc =
     if n < start then
@@ -335,6 +334,11 @@ let range ?(start : int = 0) ?(step : int = 1) j =
 
 (** Reverse a list *)
 let reversed = List.rev
+
+(** Reverse a string *)
+let reverse_string s =
+  Stdlib.String.init (Stdlib.String.length s) (fun n ->
+      Stdlib.String.get s (Stdlib.String.length s - n - 1) )
 
 (** Get unique items of list *)
 let unique (l : 'a list) : 'a list =
@@ -367,7 +371,8 @@ let sum (l : int list) = List.fold_left ( + ) 0 l
 let sumf (l : float list) = List.fold_left ( +. ) 0. l
 
 (** Sum a complex list *)
-let sumc (l : complex list) = List.fold_left Complex.add Complex.zero l
+let sumc (l : complex list) : complex =
+  List.fold_left Complex.add Complex.zero l
 
 (** Combine pairs of lists into lists of pairs *)
 let zip = List.combine
