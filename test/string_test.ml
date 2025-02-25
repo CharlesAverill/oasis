@@ -235,26 +235,24 @@ let test_upper_non_alpha () =
 
 let test_upper_unicode () = check string "Upper with unicode" "Ñ" (upper "Ñ")
 
-(* Tests for lstrip *)
-let test_lstrip_empty_string () =
-  check string "lstrip empty string" "" (lstrip "" " ")
+let test_strip_empty_string () =
+  check string "strip empty string" "" (strip "" " ")
 
-let test_lstrip_no_strip_chars () =
-  check string "lstrip no matching chars" "hello" (lstrip "hello" "xyz")
+let test_strip_no_strip_chars () =
+  check string "strip no matching chars" "hello" (strip "hello" "xyz")
 
-let test_lstrip_spaces () =
-  check string "lstrip leading spaces" "hello  " (lstrip "   hello  " " ")
+let test_strip_spaces () =
+  check string "strip leading spaces" "hello  " (strip "   hello  " " ")
 
-let test_lstrip_custom_chars () =
-  check string "lstrip custom chars" "example---" (lstrip "---example---" "-")
+let test_strip_custom_chars () =
+  check string "strip custom chars" "example---" (strip "---example---" "-")
 
-let test_lstrip_partial_match () =
-  check string "lstrip partial match" "Hello" (lstrip "abcHello" "abc")
+let test_strip_partial_match () =
+  check string "strip partial match" "Hello" (strip "abcHello" "abc")
 
-let test_lstrip_all_chars () =
-  check string "lstrip all chars" "" (lstrip "xxx" "x")
+let test_strip_all_chars () =
+  check string "strip all chars" "" (strip "xxx" "x")
 
-(* Tests for rstrip *)
 let test_rstrip_empty_string () =
   check string "rstrip empty string" "" (rstrip "" " ")
 
@@ -272,8 +270,6 @@ let test_rstrip_partial_match () =
 
 let test_rstrip_all_chars () =
   check string "rstrip all chars" "" (rstrip "yyy" "y")
-
-(* Tests for partition *)
 
 let test_partition_separator_in_middle () =
   check
@@ -320,8 +316,6 @@ let test_partition_empty_separator () =
     (triple string string string)
     "partition empty separator" ("", "", "string") (partition "string" "")
 
-(* Tests for remove_prefix *)
-
 let test_remove_prefix_present () =
   check string "remove prefix present" "happy" (remove_prefix "unhappy" "un")
 
@@ -344,8 +338,6 @@ let test_remove_prefix_empty_prefix () =
 let test_remove_prefix_longer_prefix () =
   check string "remove prefix longer prefix" "short"
     (remove_prefix "short" "longprefix")
-
-(* Tests for remove_suffix *)
 
 let test_remove_suffix_present () =
   check string "remove suffix present" "runn" (remove_suffix "running" "ing")
@@ -370,6 +362,196 @@ let test_remove_suffix_empty_suffix () =
 let test_remove_suffix_longer_suffix () =
   check string "remove suffix longer suffix" "short"
     (remove_suffix "short" "longsuffix")
+
+let test_replace_single_occurrence () =
+  check string "replace single occurrence" "hello OCaml"
+    (replace "hello world" "world" "OCaml")
+
+let test_replace_multiple_occurrences () =
+  check string "replace multiple occurrences" "bbb" (replace "aaa" "a" "b")
+
+let test_replace_limited_occurrences () =
+  check string "replace limited occurrences" "bba"
+    (replace ~count:2 "aaa" "a" "b")
+
+let test_replace_no_occurrence () =
+  check string "replace no occurrence" "hello" (replace "hello" "x" "y")
+
+let test_replace_empty_string () =
+  check string "replace empty string" "" (replace "" "a" "b")
+
+let test_replace_empty_old () =
+  check string "replace empty old string" "abcd" (replace "abcd" "" "x")
+
+let test_replace_empty_subst () =
+  check string "replace empty subst" "bc" (replace "abc" "a" "")
+
+let test_replace_full_string () =
+  check string "replace full string" "replacement"
+    (replace "old" "old" "replacement")
+
+let test_replace_partial_match () =
+  check string "replace partial match" "bbca" (replace "abca" "a" "b" ~count:1)
+
+let test_replace_count_zero () =
+  check string "replace count zero" "aaa" (replace ~count:0 "aaa" "a" "b")
+
+let test_rfind_basic () =
+  check (option int) "rfind basic" (Some 12) (rfind "hello world hello" "hello")
+
+let test_rfind_multiple_occurrences () =
+  check (option int) "rfind multiple occurrences" (Some 6)
+    (rfind "abcabcabc" "abc")
+
+let test_rfind_no_occurrence () =
+  check (option int) "rfind no occurrence" None (rfind "test" "xyz")
+
+let test_rfind_full_match () =
+  check (option int) "rfind full match" (Some 0) (rfind "string" "string")
+
+let test_rfind_empty_substring () =
+  check (option int) "rfind empty substring"
+    (Some (String.length "abc"))
+    (rfind "abc" "")
+
+let test_rfind_substring_at_end () =
+  check (option int) "rfind substring at end" (Some 3) (rfind "abcd" "d")
+
+let test_rfind_substring_at_start () =
+  check (option int) "rfind substring at start" (Some 0) (rfind "abcd" "a")
+
+let test_rfind_substring_longer_than_string () =
+  check (option int) "rfind substring longer than string" None
+    (rfind "abc" "abcd")
+
+let test_split_basic () =
+  check (list string) "split basic" ["a"; "b"; "c"] (split "a,b,c" ",")
+
+let test_split_multiple_char_separator () =
+  check (list string) "split multi-char sep"
+    ["hello"; "world"; "again"]
+    (split "hello::world::again" "::")
+
+let test_split_no_separator () =
+  check (list string) "split no sep" ["nosplit"] (split "nosplit" ",")
+
+let test_split_empty_string () =
+  check (list string) "split empty string" [""] (split "" ",")
+
+let test_split_only_separator () =
+  check (list string) "split only sep" [""; ""] (split "," ",")
+
+let test_split_trailing_separator () =
+  check (list string) "split trailing sep" ["a"; "b"; ""] (split "a,b," ",")
+
+let test_split_leading_separator () =
+  check (list string) "split leading sep" [""; "a"; "b"] (split ",a,b" ",")
+
+let test_split_repeated_separator () =
+  check (list string) "split repeated sep" ["a"; ""; "b"] (split "a,,b" ",")
+
+let test_split_full_match_separator () =
+  check (list string) "split full match sep" [""; ""] (split "::" "::")
+
+let test_swapcase_mixed_case () =
+  check string "swapcase mixed case" "hELLO wORLD" (swapcase "Hello World")
+
+let test_swapcase_all_upper () =
+  check string "swapcase all upper" "lowercase" (swapcase "LOWERCASE")
+
+let test_swapcase_all_lower () =
+  check string "swapcase all lower" "UPPERCASE" (swapcase "uppercase")
+
+let test_swapcase_non_alpha () =
+  check string "swapcase non-alpha" "1234!@# $" (swapcase "1234!@# $")
+
+let test_swapcase_empty_string () =
+  check string "swapcase empty string" "" (swapcase "")
+
+let test_swapcase_mixed_alpha_nonalpha () =
+  check string "swapcase mixed alpha-nonalpha" "tHIS 123 iS!@#"
+    (swapcase "This 123 Is!@#")
+
+let test_swapcase_single_upper_char () =
+  check string "swapcase single upper" "a" (swapcase "A")
+
+let test_swapcase_single_lower_char () =
+  check string "swapcase single lower" "Z" (swapcase "z")
+
+let test_swapcase_unicode () =
+  check string "swapcase unicode" "ß" (swapcase "ß")
+(* Should remain unchanged if not in ascii_letters *)
+
+let test_title_basic () =
+  check string "title basic" "Hello World" (title "hello world")
+
+let test_title_mixed_case () =
+  check string "title mixed case" "Hello World" (title "hElLo wORld")
+
+let test_title_single_word () =
+  check string "title single word" "Hello" (title "hello")
+
+let test_title_empty_string () = check string "title empty string" "" (title "")
+
+let test_title_multiple_spaces () =
+  check string "title multiple spaces" "Hello   World  From   Ocaml"
+    (title "hello   world  from   ocaml")
+
+let test_title_already_title_case () =
+  check string "title already title case" "Hello World" (title "Hello World")
+
+let test_title_with_numbers () =
+  check string "title with numbers" "Hello 123 World" (title "hello 123 world")
+
+let test_title_with_punctuation () =
+  check string "title with punctuation" "Hello, World!" (title "hello, world!")
+
+let test_title_uppercase_input () =
+  check string "title uppercase input" "Hello World" (title "HELLO WORLD")
+
+let test_title_lowercase_input () =
+  check string "title lowercase input" "Hello World" (title "hello world")
+
+let test_title_single_char_words () =
+  check string "title single char words" "A B C D" (title "a b c d")
+
+let test_title_trailing_leading_spaces () =
+  check string "title trailing leading spaces" "   Hello World   "
+    (title "   hello world   ")
+
+let test_translate_identity () =
+  check string "translate identity" "hello" (translate "hello" Fun.id)
+
+let test_translate_uppercase () =
+  check string "translate uppercase" "HELLO"
+    (translate "hello" Char.uppercase_ascii)
+
+let test_translate_lowercase () =
+  check string "translate lowercase" "hello"
+    (translate "HELLO" Char.lowercase_ascii)
+
+let test_translate_shift_char () =
+  check string "translate shift char" "ifmmp"
+    (translate "hello" (fun c -> Char.chr (Char.code c + 1)))
+
+let test_translate_replace_vowels () =
+  check string "translate replace vowels" "h*ll* w*rld"
+    (translate "hello world" (fun c ->
+         match c with 'a' | 'e' | 'i' | 'o' | 'u' -> '*' | _ -> c ) )
+
+let test_translate_empty_string () =
+  check string "translate empty string" "" (translate "" Char.uppercase_ascii)
+
+let test_translate_non_alpha () =
+  check string "translate non-alpha" "!@#$%" (translate "!@#$%" (fun c -> c))
+
+let test_translate_reverse_case () =
+  check string "translate reverse case" "hELLO wORLD"
+    (translate "Hello World" (fun c ->
+         if Char.uppercase_ascii c = c then
+           Char.lowercase_ascii c
+         else
+           Char.uppercase_ascii c ) )
 
 let () =
   let open Alcotest in
@@ -416,18 +598,6 @@ let () =
             test_find_substring_longer_than_string
         ; test_case "contains" `Quick test_contains
         ; test_case "contains_char" `Quick test_contains_char
-        ; test_case "lstrip empty string" `Quick test_lstrip_empty_string
-        ; test_case "lstrip no matching chars" `Quick test_lstrip_no_strip_chars
-        ; test_case "lstrip leading spaces" `Quick test_lstrip_spaces
-        ; test_case "lstrip custom chars" `Quick test_lstrip_custom_chars
-        ; test_case "lstrip partial match" `Quick test_lstrip_partial_match
-        ; test_case "lstrip all chars" `Quick test_lstrip_all_chars
-        ; test_case "rstrip empty string" `Quick test_rstrip_empty_string
-        ; test_case "rstrip no matching chars" `Quick test_rstrip_no_strip_chars
-        ; test_case "rstrip trailing spaces" `Quick test_rstrip_spaces
-        ; test_case "rstrip custom chars" `Quick test_rstrip_custom_chars
-        ; test_case "rstrip partial match" `Quick test_rstrip_partial_match
-        ; test_case "rstrip all chars" `Quick test_rstrip_all_chars
         ; test_case "partition middle separator" `Quick
             test_partition_separator_in_middle
         ; test_case "partition separator at start" `Quick
@@ -443,6 +613,30 @@ let () =
         ; test_case "partition empty string" `Quick test_partition_empty_string
         ; test_case "partition empty separator" `Quick
             test_partition_empty_separator
+        ; test_case "rfind basic" `Quick test_rfind_basic
+        ; test_case "rfind multiple occurrences" `Quick
+            test_rfind_multiple_occurrences
+        ; test_case "rfind no occurrence" `Quick test_rfind_no_occurrence
+        ; test_case "rfind full match" `Quick test_rfind_full_match
+        ; test_case "rfind empty substring" `Quick test_rfind_empty_substring
+        ; test_case "rfind substring at end" `Quick test_rfind_substring_at_end
+        ; test_case "rfind substring at start" `Quick
+            test_rfind_substring_at_start
+        ; test_case "rfind substring longer than string" `Quick
+            test_rfind_substring_longer_than_string ] )
+    ; ( "Replacement"
+      , [ test_case "strip empty string" `Quick test_strip_empty_string
+        ; test_case "strip no matching chars" `Quick test_strip_no_strip_chars
+        ; test_case "strip leading spaces" `Quick test_strip_spaces
+        ; test_case "strip custom chars" `Quick test_strip_custom_chars
+        ; test_case "strip partial match" `Quick test_strip_partial_match
+        ; test_case "strip all chars" `Quick test_strip_all_chars
+        ; test_case "rstrip empty string" `Quick test_rstrip_empty_string
+        ; test_case "rstrip no matching chars" `Quick test_rstrip_no_strip_chars
+        ; test_case "rstrip trailing spaces" `Quick test_rstrip_spaces
+        ; test_case "rstrip custom chars" `Quick test_rstrip_custom_chars
+        ; test_case "rstrip partial match" `Quick test_rstrip_partial_match
+        ; test_case "rstrip all chars" `Quick test_rstrip_all_chars
         ; test_case "remove prefix present" `Quick test_remove_prefix_present
         ; test_case "remove prefix not present" `Quick
             test_remove_prefix_not_present
@@ -468,7 +662,41 @@ let () =
         ; test_case "remove suffix empty suffix" `Quick
             test_remove_suffix_empty_suffix
         ; test_case "remove suffix longer suffix" `Quick
-            test_remove_suffix_longer_suffix ] )
+            test_remove_suffix_longer_suffix
+        ; test_case "replace single occurrence" `Quick
+            test_replace_single_occurrence
+        ; test_case "replace multiple occurrences" `Quick
+            test_replace_multiple_occurrences
+        ; test_case "replace limited occurrences" `Quick
+            test_replace_limited_occurrences
+        ; test_case "replace no occurrence" `Quick test_replace_no_occurrence
+        ; test_case "replace empty string" `Quick test_replace_empty_string
+        ; test_case "replace empty old substring" `Quick test_replace_empty_old
+        ; test_case "replace empty subst" `Quick test_replace_empty_subst
+        ; test_case "replace full string" `Quick test_replace_full_string
+        ; test_case "replace partial match" `Quick test_replace_partial_match
+        ; test_case "replace count zero" `Quick test_replace_count_zero
+        ; test_case "split basic" `Quick test_split_basic
+        ; test_case "split multi-char sep" `Quick
+            test_split_multiple_char_separator
+        ; test_case "split no sep" `Quick test_split_no_separator
+        ; test_case "split empty string" `Quick test_split_empty_string
+        ; test_case "split only sep" `Quick test_split_only_separator
+        ; test_case "split trailing sep" `Quick test_split_trailing_separator
+        ; test_case "split leading sep" `Quick test_split_leading_separator
+        ; test_case "split repeated sep" `Quick test_split_repeated_separator
+        ; test_case "split full match sep" `Quick
+            test_split_full_match_separator
+        ; test_case "translate identity" `Quick test_translate_identity
+        ; test_case "translate uppercase" `Quick test_translate_uppercase
+        ; test_case "translate lowercase" `Quick test_translate_lowercase
+        ; test_case "translate shift char" `Quick test_translate_shift_char
+        ; test_case "translate replace vowels" `Quick
+            test_translate_replace_vowels
+        ; test_case "translate empty string" `Quick test_translate_empty_string
+        ; test_case "translate non-alpha" `Quick test_translate_non_alpha
+        ; test_case "translate reverse case" `Quick test_translate_reverse_case
+        ] )
     ; ( "Case"
       , [ test_case "Capitalize empty" `Quick test_capitalize_empty
         ; test_case "Capitalize single char" `Quick test_capitalize_single_char
@@ -492,4 +720,31 @@ let () =
         ; test_case "Upper all lowercase" `Quick test_upper_all_lowercase
         ; test_case "Upper mixed case" `Quick test_upper_mixed_case
         ; test_case "Upper with non-alphabetic" `Quick test_upper_non_alpha
-        ; test_case "Upper with unicode" `Quick test_upper_unicode ] ) ]
+        ; test_case "Upper with unicode" `Quick test_upper_unicode
+        ; test_case "swapcase mixed case" `Quick test_swapcase_mixed_case
+        ; test_case "swapcase all upper" `Quick test_swapcase_all_upper
+        ; test_case "swapcase all lower" `Quick test_swapcase_all_lower
+        ; test_case "swapcase non-alpha" `Quick test_swapcase_non_alpha
+        ; test_case "swapcase empty string" `Quick test_swapcase_empty_string
+        ; test_case "swapcase mixed alpha-nonalpha" `Quick
+            test_swapcase_mixed_alpha_nonalpha
+        ; test_case "swapcase single upper" `Quick
+            test_swapcase_single_upper_char
+        ; test_case "swapcase single lower" `Quick
+            test_swapcase_single_lower_char
+        ; test_case "swapcase unicode" `Quick test_swapcase_unicode
+        ; test_case "title basic" `Quick test_title_basic
+        ; test_case "title mixed case" `Quick test_title_mixed_case
+        ; test_case "title single word" `Quick test_title_single_word
+        ; test_case "title empty string" `Quick test_title_empty_string
+        ; test_case "title multiple spaces" `Quick test_title_multiple_spaces
+        ; test_case "title already title case" `Quick
+            test_title_already_title_case
+        ; test_case "title with numbers" `Quick test_title_with_numbers
+        ; test_case "title with punctuation" `Quick test_title_with_punctuation
+        ; test_case "title uppercase input" `Quick test_title_uppercase_input
+        ; test_case "title lowercase input" `Quick test_title_lowercase_input
+        ; test_case "title single char words" `Quick
+            test_title_single_char_words
+        ; test_case "title trailing leading spaces" `Quick
+            test_title_trailing_leading_spaces ] ) ]

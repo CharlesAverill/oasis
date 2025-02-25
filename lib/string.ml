@@ -44,6 +44,20 @@ let char_is_printable (c : char) : bool = exists (( = ) c) printable
 *)
 let string_is_printable (s : string) : bool = for_all char_is_printable s
 
+(** Get number of characters of string *)
+let slen = length
+
+(** Get substring between two positions *)
+let subst (s : string) (start : int) (stop : int) : string =
+  let stop =
+    if stop < 0 then
+      slen s - stop
+    else
+      stop
+  in
+  if stop < start then invalid_arg "substring end must be after start" ;
+  sub s start (slen s - stop)
+
 (** Fills a template string using values from a provided map.
     Template variables are denoted by [$identifier]. Dollar signs can be escaped with [$$].
 
@@ -104,7 +118,7 @@ let capitalize (s : string) : string =
   if s = "" then
     ""
   else
-    uppercase_ascii (sub s 0 1) ^ lowercase_ascii (sub s 1 (length s - 1))
+    uppercase_ascii (sub s 0 1) ^ lowercase_ascii (sub s 1 (slen s - 1))
 
 (** Centers a string in a field of a given width using a specified fill character.
 
@@ -114,10 +128,10 @@ let capitalize (s : string) : string =
     @return The centered string.
 *)
 let center ?(fill_char : char = ' ') (s : string) (w : int) : string =
-  if length s >= w then
+  if slen s >= w then
     s
   else
-    let w = w - length s in
+    let w = w - slen s in
     let even = w mod 2 = 0 in
     make
       ( (w / 2)
@@ -138,10 +152,10 @@ let center ?(fill_char : char = ' ') (s : string) (w : int) : string =
     @return The left-justified string. If [s] is longer than [w], [s] is returned unchanged.
 *)
 let ljust ?(fill_char : char = ' ') (s : string) (w : int) : string =
-  if length s >= w then
+  if slen s >= w then
     s
   else
-    s ^ make (w - length s) fill_char
+    s ^ make (w - slen s) fill_char
 
 (** Right-justifies a string by padding it on the left with a specified character.
 
@@ -151,10 +165,10 @@ let ljust ?(fill_char : char = ' ') (s : string) (w : int) : string =
     @return The right-justified string. If [s] is longer than [w], [s] is returned unchanged.
 *)
 let rjust ?(fill_char : char = ' ') (s : string) (w : int) : string =
-  if length s >= w then
+  if slen s >= w then
     s
   else
-    make (w - length s) fill_char ^ s
+    make (w - slen s) fill_char ^ s
 
 (** Counts the number of non-overlapping occurrences of a substring in a string.
 
@@ -163,12 +177,12 @@ let rjust ?(fill_char : char = ' ') (s : string) (w : int) : string =
     @return The number of occurrences of [sub] in [s].
 *)
 let count (s : string) (sub : string) : int =
-  let sub_len = length sub in
+  let sub_len = slen sub in
   if sub_len = 0 then
     0
   else
     let rec aux idx acc =
-      if idx > length s - sub_len then
+      if idx > slen s - sub_len then
         acc
       else if Stdlib.String.sub s idx sub_len = sub then
         aux (idx + sub_len) (acc + 1)
@@ -215,8 +229,8 @@ let expand_tabs ?(tab_size : int = 4) (s : string) : string =
     @return [Some index] of the first occurrence or [None] if not found.
 *)
 let find (s : string) (sub : string) : int option =
-  let s_len = length s in
-  let sub_len = length sub in
+  let s_len = slen s in
+  let sub_len = slen sub in
   if sub_len = 0 then
     Some 0
   else
@@ -229,6 +243,76 @@ let find (s : string) (sub : string) : int option =
         aux (idx + 1)
     in
     aux 0
+
+(** Finds the last occurrence of a substring [sub] in the string [s].
+
+    Searches from the end of the string and returns the starting index of the last occurrence
+    if found. Returns [None] if [sub] is not found in [s].
+
+    @param s The string to search within.
+    @param sub The substring to search for.
+    @return [Some index] of the last occurrence, or [None] if not found.
+*)
+let rfind (s : string) (sub : string) : int option =
+  match find (reverse_string s) (reverse_string sub) with
+  | None ->
+      None
+  | Some idx ->
+      Some (slen s - idx - slen sub)
+
+(** Finds the first occurrence of a substring in a string, starting from a given index.
+
+    @param s The string to search in.
+    @param sub The substring to search for.
+    @param start The position to start searching from
+    @return [Some index] of the first occurrence or [None] if not found.
+*)
+let find_from (s : string) (subst : string) (start : int) : int option =
+  if start >= slen s then
+    None
+  else
+    match find (sub s start (slen s - start)) subst with
+    | None ->
+        None
+    | Some idx ->
+        Some (idx + start)
+
+(** Finds the last occurrence of a substring in a string, starting from a given index.
+
+    @param s The string to search in.
+    @param sub The substring to search for.
+    @param start The position to start searching from
+    @return [Some index] of the first occurrence or [None] if not found.
+*)
+let rfind_from (s : string) (subst : string) (start : int) : int option =
+  if start >= slen s then
+    None
+  else
+    match rfind (sub s start (slen s - start)) subst with
+    | None ->
+        None
+    | Some idx ->
+        Some (idx + start)
+
+(** Finds all occurences of a substring in a string
+
+    @param s The string to search in
+    @param sub The substring to search for
+    @return [int list] containing indices of substring occurrences
+*)
+let find_all (s : string) (subst : string) : int list =
+  List.fold_left
+    (fun a i ->
+      match find_from s subst i with
+      | None ->
+          a
+      | Some idx ->
+          if List.exists (( = ) idx) a then
+            a
+          else
+            a @ [idx] )
+    []
+    (range (slen s))
 
 (** Checks if a string contains a given substring.
 
@@ -255,6 +339,16 @@ let contains_char (s : string) (c : char) : bool = find s (make 1 c) != None
 *)
 let index (s : string) (sub : string) : int =
   match find s sub with None -> raise Not_found | Some n -> n
+
+(** Finds the index of the last occurrence of a substring, or raises [Not_found].
+
+    @param s The string to search in.
+    @param sub The substring to search for.
+    @return The index of the last occurrence.
+    @raise Not_found If [sub] is not found in [s].
+*)
+let rindex (s : string) (sub : string) : int =
+  match rfind s sub with None -> raise Not_found | Some n -> n
 
 (** Checks if a string consists only of alphabetic characters.
 
@@ -322,27 +416,6 @@ let lower (s : string) : string =
 let is_space (s : string) : bool =
   (not (s = "")) && for_all (contains_char whitespace) s
 
-(** Checks if a string is in title case (each word capitalized).
-
-    @param s The string to check.
-    @return [true] if the string is in title case, [false] otherwise.
-*)
-let is_title (s : string) : bool =
-  (not (s = ""))
-  && fst
-       (fold_left
-          (fun (is_title, last_was_uncased) c ->
-            ( ( is_title
-              &&
-              if contains_char ascii_uppercase c then
-                last_was_uncased
-              else if contains_char ascii_lowercase c then
-                not last_was_uncased
-              else
-                true )
-            , contains_char (whitespace ^ punctuation ^ digits) c ) )
-          (true, true) s )
-
 (** Checks if a string consists only of uppercase and uncased letters.
 
     @param s The string to check.
@@ -392,7 +465,7 @@ let join = concat
     @param chars A string containing all characters to strip from the start of [s].
     @return A new string with the specified leading characters removed.
 *)
-let lstrip (s : string) (chars : string) : string =
+let strip (s : string) (chars : string) : string =
   fst
     (fold_left
        (fun (a, stop) c ->
@@ -441,9 +514,27 @@ let partition (s : string) (sep : string) : string * string * string =
   | None ->
       (s, "", "")
   | Some idx ->
-      ( sub s 0 idx
-      , sep
-      , sub s (idx + length sep) (length s - (idx + length sep)) )
+      (sub s 0 idx, sep, sub s (idx + slen sep) (slen s - (idx + slen sep)))
+
+(** Splits a string [s] into a 3-tuple based on the last occurrence of the separator [sep].
+
+    The result is a tuple [(before, sep, after)], where:
+    - [before] is the substring before the last occurrence of [sep].
+    - [sep] is the separator itself (if found).
+    - [after] is the substring after the last occurrence of [sep].
+
+    If the separator [sep] is not found, returns [(s, "", "")].
+
+    @param s The input string to partition.
+    @param sep The separator string to search for.
+    @return A tuple [(before, sep, after)].
+*)
+let rpartition (s : string) (sep : string) : string * string * string =
+  match rfind s sep with
+  | None ->
+      (s, "", "")
+  | Some idx ->
+      (sub s 0 idx, sep, sub s (idx + slen sep) (slen s - (idx + slen sep)))
 
 (** Removes the specified [prefix] from the string [s] if it starts with [prefix].
 
@@ -455,7 +546,7 @@ let partition (s : string) (sep : string) : string * string * string =
 *)
 let remove_prefix (s : string) (prefix : string) : string =
   if starts_with s prefix then
-    sub s (length prefix) (length s - length prefix)
+    sub s (slen prefix) (slen s - slen prefix)
   else
     s
 
@@ -469,6 +560,120 @@ let remove_prefix (s : string) (prefix : string) : string =
 *)
 let remove_suffix (s : string) (suffix : string) : string =
   if ends_with s suffix then
-    sub s 0 (length s - length suffix)
+    sub s 0 (slen s - slen suffix)
   else
     s
+
+(** Replaces occurrences of [old] with [subst] in the string [s].
+
+    If [count] is specified and greater than 0, only the first [count] occurrences are replaced. 
+    If [count] is negative or zero, all occurrences are replaced.
+    If [old] is empty, [s] is returned.
+
+    @param s The input string.
+    @param old The substring to be replaced.
+    @param subst The substring to replace with.
+    @param count Optional number of replacements to make; defaults to all (-1).
+    @return A new string with replacements made.
+*)
+let replace ?(count : int = -1) (s : string) (old : string) (subst : string) :
+    string =
+  if old = "" then
+    s
+  else
+    let rec aux acc remaining replacements =
+      match find remaining old with
+      | None ->
+          acc ^ remaining
+      | Some idx ->
+          if count >= 0 && replacements >= count then
+            acc ^ remaining
+          else
+            let before = sub remaining 0 idx in
+            let after =
+              sub remaining (idx + slen old) (slen remaining - idx - slen old)
+            in
+            aux (acc ^ before ^ subst) after (replacements + 1)
+    in
+    aux "" s 0
+
+(** Splits a string [s] into a list of substrings using [sep] as the delimiter.
+
+    The string is split at each occurrence of [sep]. The separator itself is not included
+    in the resulting substrings. If [sep] is not found, the result is a list containing [s].
+
+    @param s The string to split.
+    @param sep The substring delimiter to split by.
+    @return A list of substrings resulting from the split.
+*)
+let split (s : string) (sep : string) : string list =
+  match
+    fold_left
+      (fun (a, scan) c ->
+        if ends_with (scan ^ make 1 c) sep then
+          (a @ [remove_suffix (scan ^ make 1 c) sep], "")
+        else
+          (a, scan ^ make 1 c) )
+      ([], "") s
+  with
+  | x, y ->
+      x @ [y]
+
+(** Returns a copy of the string [s] with uppercase characters converted to lowercase 
+    and lowercase characters converted to uppercase. Non-alphabetic and unicode
+    characters remain unchanged.
+
+    @param s The string whose characters' cases will be swapped.
+    @return A new string with swapped cases.
+*)
+let swapcase (s : string) : string =
+  fold_left
+    (fun a c ->
+      let c = make 1 c in
+      if not (is_alpha c) then
+        a ^ c
+      else if is_upper c then
+        a ^ lower c
+      else
+        a ^ upper c )
+    "" s
+
+(** Converts a string to title case by capitalizing the first character of each
+    word, separated by spaces
+
+    @param s The string to title-case
+    @return The title-cased string
+*)
+let title (s : string) : string =
+  join " "
+    (List.map
+       (fun s ->
+         if slen s > 0 then
+           upper (make 1 (get s 0)) ^ lower (sub s 1 (slen s - 1))
+         else
+           "" )
+       (split s " ") )
+
+(** Checks if a string is in title case (each word capitalized).
+
+    @param s The string to check.
+    @return [true] if the string is in title case, [false] otherwise.
+*)
+let is_title (s : string) : bool = (not (s = "")) && s = title s
+
+(** Replace characters in a string via a map or function from old characters to 
+    new characters
+
+    @param s The string to translate
+    @param f The map to apply to the string
+    @return The translated string
+*)
+let translate (s : string) (f : char -> char) : string = map f s
+
+(** Left-pad a string with zeros
+
+    @param s The string to pad
+    @param w The length of the output string
+    @return The padded string
+*)
+let zfill (s : string) (w : int) : string = ljust ~fill_char:'0' s w
