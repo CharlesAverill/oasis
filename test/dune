@@ -5,3 +5,7 @@
 (test
  (name string_test)
  (libraries oasis alcotest))
+
+(test
+ (name collections_test)
+ (libraries oasis alcotest))

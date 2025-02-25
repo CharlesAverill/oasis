@@ -203,16 +203,16 @@ let ord (s : string) : int =
 (** Get the formatted string for a given object *)
 let format = Printf.sprintf
 
-(** Maps/Dictionaries *)
+(** Dictionaries *)
 module Dict = struct
-  type ('a, 'b) t = {f: 'a -> 'b; keys: 'a list; values: 'b list}
+  type ('a, 'b) t = {_f: 'a -> 'b; _keys: 'a list; _values: 'b list}
 
   (** Get operator *)
-  let ( .?[] ) (m : ('a, 'b) t) (k : 'a) : 'b = m.f k
+  let ( .?[] ) (m : ('a, 'b) t) (k : 'a) : 'b = m._f k
 
   (** Empty dictionary with default value *)
   let empty (default : 'b) : ('a, 'b) t =
-    {f= (fun _ -> default); keys= []; values= []}
+    {_f= (fun _ -> default); _keys= []; _values= []}
 
   (** No matching key error *)
   exception KeyError of string
@@ -222,45 +222,95 @@ module Dict = struct
       =
     match string_of_key with
     | None ->
-        {f= (fun _ -> raise (KeyError "No such key")); keys= []; values= []}
+        {_f= (fun _ -> raise (KeyError "No such key")); _keys= []; _values= []}
     | Some f ->
-        { f= (fun k -> raise (KeyError ("No such key '" ^ f k ^ "'")))
-        ; keys= []
-        ; values= [] }
+        { _f= (fun k -> raise (KeyError ("No such key '" ^ f k ^ "'")))
+        ; _keys= []
+        ; _values= [] }
+
+  (** Safe get, catches KeyErrors *)
+  let safe_get f x = try Some f.?[x] with KeyError _ -> None
+
+  (** Number of stored items *)
+  let len m = List.length m._keys
+
+  (** Whether a key exists in the dictionary *)
+  let key_in (m : ('a, 'b) t) (k : 'a) = List.exists (( = ) k) m._keys
+
+  (** Whether a value exists in the dictionary *)
+  let val_in (m : ('a, 'b) t) (v : 'b) = List.exists (( = ) v) m._values
 
   (** Add to dictionary *)
   let update f x y : ('a, 'b) t =
-    { f=
+    { _f=
         (fun x' ->
           if x = x' then
             y
           else
             f.?[x'] )
-    ; keys= x :: f.keys
-    ; values= y :: f.values }
+    ; _keys=
+        ( f._keys
+        @
+        if key_in f x then
+          []
+        else
+          [x] )
+    ; _values=
+        ( if key_in f x then
+            match List.find_index (fun xi -> x = xi) f._keys with
+            | None ->
+                raise (Failure "Unreachable")
+            | Some idx ->
+                List.mapi
+                  (fun i xi ->
+                    if i = idx then
+                      y
+                    else
+                      xi )
+                  f._values
+          else
+            f._values @ [y] ) }
 
   (** Set operator *)
   let ( .?[]<- ) (m : ('a, 'b) t) (k : 'a) (v : 'b) : ('a, 'b) t = update m k v
 
-  (** Number of stored items *)
-  let len m = List.length m.keys
-
-  (** Whether a key exists in the map *)
-  let key_in (m : ('a, 'b) t) (k : 'a) = List.exists (( = ) k) m.keys
-
-  (** Whether a value exists in the map *)
-  let val_in (m : ('a, 'b) t) (v : 'b) = List.exists (( = ) v) m.values
-
-  (** Get an empty map with the same keys as another *)
+  (** Get an empty dictionary with the same keys as another *)
   let from_keys (m : ('a, 'b) t) (default : 'b) : ('a, 'b) t =
-    {(empty default) with keys= m.keys}
+    {(empty default) with _keys= m._keys}
 
-  (** Key-value pairs of map *)
-  let items (m : ('a, 'b) t) : ('a * 'b) list = List.combine m.keys m.values
+  (** Public access to dictionary keys *)
+  let keys m = m._keys
+
+  (** Public access to dictionary values *)
+  let values m = m._values
+
+  (** Key-value pairs of dictionary *)
+  let items (m : ('a, 'b) t) : ('a * 'b) list = List.combine m._keys m._values
 
   (** Add key-value pairs from another dictionary *)
   let merge (m1 : ('a, 'b) t) (m2 : ('a, 'b) t) : ('a, 'b) t =
-    List.fold_left (fun a k -> a.?[k] <- m2.?[k]) m1 m2.keys
+    List.fold_left (fun a k -> a.?[k] <- m2.?[k]) m1 m2._keys
+
+  let subset (x : ('a, 'b) t) (y : ('a, 'b) t) : bool =
+    List.for_all (key_in y) x._keys
+
+  let ( <? ) = subset
+
+  let ( >? ) x y = subset y x
+
+  (** Equality over keys and values (order doesn't matter) *)
+  let ( =? ) (x : ('a, 'b) t) (y : ('a, 'b) t) : bool =
+    x < y && y < x
+    && List.for_all (fun xi -> x.?[xi] = y.?[xi]) x._keys
+    && List.for_all (fun yi -> x.?[yi] = y.?[yi]) y._keys
+
+  let ( !=? ) x y = not (x =? y)
+
+  let ( <=? ) x y = x < y || x =? y
+
+  let ( >=? ) x y = x > y || x =? y
+
+  let ( >=? ) x y = subset y x || x =? y
 end
 
 type ('a, 'b) dict = ('a, 'b) Dict.t
