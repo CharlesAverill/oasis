@@ -294,23 +294,21 @@ module Dict = struct
   let subset (x : ('a, 'b) t) (y : ('a, 'b) t) : bool =
     List.for_all (key_in y) x._keys
 
-  let ( <? ) = subset
+  let ( <? ) x y = subset x y
 
   let ( >? ) x y = subset y x
 
   (** Equality over keys and values (order doesn't matter) *)
   let ( =? ) (x : ('a, 'b) t) (y : ('a, 'b) t) : bool =
-    x < y && y < x
+    x <? y && y <? x
     && List.for_all (fun xi -> x.?[xi] = y.?[xi]) x._keys
     && List.for_all (fun yi -> x.?[yi] = y.?[yi]) y._keys
 
-  let ( !=? ) x y = not (x =? y)
+  let ( <>? ) x y = not (x =? y)
 
-  let ( <=? ) x y = x < y || x =? y
+  let ( <=? ) x y = x <? y || x =? y
 
-  let ( >=? ) x y = x > y || x =? y
-
-  let ( >=? ) x y = subset y x || x =? y
+  let ( >=? ) x y = x >? y || x =? y
 end
 
 type ('a, 'b) dict = ('a, 'b) Dict.t
@@ -401,7 +399,7 @@ let unique (l : 'a list) : 'a list =
            x :: a )
        [] l )
 
-(** Slice a list *)
+(** Slice a list from \[start..stop) *)
 let slice l ?(step : int = 1) (start : int) (stop : int) =
   let rec aux current_idx acc =
     if current_idx >= stop then
@@ -413,6 +411,17 @@ let slice l ?(step : int = 1) (start : int) (stop : int) =
       aux (current_idx + 1) acc
   in
   aux start []
+
+(** Swap items at given indices in a list *)
+let swap l i j =
+  if i = j then
+    l
+  else
+    slice l 0 i
+    @ [List.nth l j]
+    @ slice l (i + 1) j
+    @ [List.nth l i]
+    @ slice l (j + 1) (List.length l)
 
 (** Sum an int list *)
 let sum (l : int list) = List.fold_left ( + ) 0 l

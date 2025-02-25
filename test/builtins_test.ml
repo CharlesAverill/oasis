@@ -529,6 +529,83 @@ let test_range_empty () =
   (* range with start = 10, step = 1, and j = 0 should return an empty list *)
   check (list int) "range ~start:10 0" [] (range ~start:10 0)
 
+let test_swap_basic () =
+  let l = [1; 2; 3; 4; 5] in
+  let swapped = swap l 1 3 in
+  check (list int) "swap basic" [1; 4; 3; 2; 5] swapped
+
+let test_swap_same_index () =
+  let l = [1; 2; 3; 4; 5] in
+  let swapped = swap l 2 2 in
+  check (list int) "swap same index" [1; 2; 3; 4; 5] swapped
+
+let test_swap_first_last () =
+  let l = [1; 2; 3; 4; 5] in
+  let swapped = swap l 0 4 in
+  check (list int) "swap first and last" [5; 2; 3; 4; 1] swapped
+
+let test_swap_adjacent () =
+  let l = [1; 2; 3; 4; 5] in
+  let swapped = swap l 2 3 in
+  check (list int) "swap adjacent" [1; 2; 4; 3; 5] swapped
+
+let test_swap_single_element_list () =
+  let l = [1] in
+  let swapped = swap l 0 0 in
+  check (list int) "swap single element list" [1] swapped
+
+let test_swap_empty_list () =
+  let l = [] in
+  let swapped = swap l 0 0 in
+  check (list int) "swap empty list" [] swapped
+
+(* Helper dictionaries for testing *)
+let d1 = ((empty 0).?["a"] <- 1).?["b"] <- 2
+
+let d2 = (((empty 0).?["a"] <- 1).?["b"] <- 2).?["c"] <- 3
+
+let d3 = ((empty 0).?["a"] <- 1).?["b"] <- 2
+
+let d4 = ((empty 0).?["a"] <- 1).?["b"] <- 5
+
+let d_empty = {_keys= []; _values= []; _f= (fun _ -> 0)}
+
+(* Subset tests *)
+let test_subset_true () = check bool "d1 < d2" true (d1 <? d2)
+
+let test_subset_false () = check bool "d2 < d1" false (d2 <? d1)
+
+let test_subset_empty () = check bool "empty < d1" true (d_empty <? d1)
+
+(* Equality tests *)
+let test_equal_true () = check bool "d1 =? d3" true (d1 =? d3)
+
+let test_equal_false () = check bool "d1 =? d4" false (d1 =? d4)
+
+(* Inequality tests *)
+let test_not_equal_true () = check bool "d1 !=? d4" true (d1 <>? d4)
+
+let test_not_equal_false () = check bool "d1 !=? d3" false (d1 <>? d3)
+
+(* Greater than tests *)
+let test_greater_true () = check bool "d2 >? d1" true (d2 >? d1)
+
+let test_greater_false () = check bool "d1 >? d2" false (d1 >? d2)
+
+(* Less than or equal tests *)
+let test_lte_true_equal () = check bool "d1 <=? d3" true (d1 <=? d3)
+
+let test_lte_true_subset () = check bool "d1 <=? d2" true (d1 <=? d2)
+
+let test_lte_false () = check bool "d2 <=? d1" false (d2 <=? d1)
+
+(* Greater than or equal tests *)
+let test_gte_true_equal () = check bool "d1 >=? d3" true (d1 >=? d3)
+
+let test_gte_true_superset () = check bool "d2 >=? d1" true (d2 >=? d1)
+
+let test_gte_false () = check bool "d1 >=? d2" false (d1 >=? d2)
+
 let () =
   let open Alcotest in
   run "Builtins"
@@ -589,7 +666,7 @@ let () =
         ; test_case "test_format_bool" `Quick test_format_bool
         ; test_case "test_format_tuple" `Quick test_format_tuple
         ; test_case "test_format_list" `Quick test_format_list ] )
-    ; ( "Map operations"
+    ; ( "Dict operations"
       , [ test_case "test_empty_map" `Quick test_empty_map
         ; test_case "test_err_empty_map" `Quick test_err_empty_map
         ; test_case "test_update_map" `Quick test_update_map
@@ -601,7 +678,23 @@ let () =
         ; test_case "test_val_in" `Quick test_val_in
         ; test_case "test_from_keys" `Quick test_from_keys
         ; test_case "test_items" `Quick test_items
-        ; test_case "test_merge" `Quick test_merge ] )
+        ; test_case "test_merge" `Quick test_merge
+        ; test_case "subset true" `Quick test_subset_true
+        ; test_case "subset false" `Quick test_subset_false
+        ; test_case "subset empty" `Quick test_subset_empty
+        ; test_case "equal true" `Quick test_equal_true
+        ; test_case "equal false" `Quick test_equal_false
+        ; test_case "not equal true" `Quick test_not_equal_true
+        ; test_case "not equal false" `Quick test_not_equal_false
+        ; test_case "greater true" `Quick test_greater_true
+        ; test_case "greater false" `Quick test_greater_false
+        ; test_case "less or equal true (equal)" `Quick test_lte_true_equal
+        ; test_case "less or equal true (subset)" `Quick test_lte_true_subset
+        ; test_case "less or equal false" `Quick test_lte_false
+        ; test_case "greater or equal true (equal)" `Quick test_gte_true_equal
+        ; test_case "greater or equal true (superset)" `Quick
+            test_gte_true_superset
+        ; test_case "greater or equal false" `Quick test_gte_false ] )
     ; ( "List operations"
       , [ test_case "test_all_empty" `Quick test_all_empty
         ; test_case "test_all_true" `Quick test_all_true
@@ -654,4 +747,11 @@ let () =
         ; test_case "test_sumc_empty" `Quick test_sumc_empty
         ; test_case "test_sumc_single_element" `Quick test_sumc_single_element
         ; test_case "test_sumc_multiple_elements" `Quick
-            test_sumc_multiple_elements ] ) ]
+            test_sumc_multiple_elements
+        ; test_case "swap basic" `Quick test_swap_basic
+        ; test_case "swap same index" `Quick test_swap_same_index
+        ; test_case "swap first and last" `Quick test_swap_first_last
+        ; test_case "swap adjacent elements" `Quick test_swap_adjacent
+        ; test_case "swap single element list" `Quick
+            test_swap_single_element_list
+        ; test_case "swap empty list" `Quick test_swap_empty_list ] ) ]
