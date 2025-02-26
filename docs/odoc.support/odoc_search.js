@@ -44,7 +44,7 @@ document.querySelector(".search-bar").addEventListener("focus", (ev) => {
       let f = (entry) => {
         let search_result = document.createElement("a");
         search_result.classList.add("search-entry");
-        search_result.href = base_url + entry.url;
+        search_result.href = "./" + entry.url.substring("oasis/".length);
         search_result.innerHTML = entry.html;
         search_results.appendChild(search_result);
       };
