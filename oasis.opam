@@ -13,7 +13,9 @@ depends: [
   "dune" {>= "3.17" & >= "3.17"}
   "alcotest" {with-test}
   "ocamlformat" {with-test}
+  "ocamlformat" {with-doc}
   "odoc" {with-doc}
+  "sherlodoc" {with-doc}
 ]
 build: [
   ["dune" "subst"] {dev}

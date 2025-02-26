@@ -49,7 +49,7 @@ cleandocs:
 	if [ ! -d $(DOCS_PATH) ]; then \
 		mkdir $(DOCS_PATH); \
 	fi
-	rm -rf $(DOCS_PATH)module $(DOCS_PATH)docs $(DOCS_PATH)odoc.support $(DOCS_PATH)index.html
+	rm -rf $(DOCS_PATH)module $(DOCS_PATH)docs $(DOCS_PATH)odoc.support $(DOCS_PATH)index.html $(DOCS_PATH)sherlodoc.js $(DOCS_PATH)db.js
 
 docs: cleandocs build
 	$(OPAM_EXEC) $(DUNE) build @doc
@@ -57,6 +57,8 @@ docs: cleandocs build
 	rm -f $(DOCS_PATH)index.html
 	mv $(DOCS_PATH)oasis/oasis.html $(DOCS_PATH)index.html
 	mv $(DOCS_PATH)oasis $(DOCS_PATH)module
+	cp -f $(DOCS_PATH)theme.css $(DOCS_PATH)odoc.support/odoc.css
+	cp $(DOCS_PATH)module/db.js $(DOCS_PATH)db.js
 	
 	@echo "Preparing Index\n--------------"
 	# Header
@@ -65,6 +67,10 @@ docs: cleandocs build
 	sed -i 's/..\/odoc.support/odoc.support/g' $(DOCS_PATH)index.html
 	# Body
 	sed -i "s@<nav class="odoc-nav">.*gbcamel</nav>@@g" $(DOCS_PATH)index.html
+
+	@echo "Fixing search\n-----------------"
+	sed -i 's/search_result.href = base_url + entry.url/search_result.href = \".\/\" + entry.url.substring(\"oasis\/\".length)/g' \
+		$(DOCS_PATH)odoc.support/odoc_search.js
 
 push: cleandocs build
 	@read -p "Commit message: " input; \

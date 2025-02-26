@@ -26,12 +26,12 @@ let powf = ( ** )
 let divmod (x : int) (y : int) = (x / y, x mod y)
 
 (** Get pair of dividend and modulo of two floats 
-        https://stackoverflow.com/a/37977740
+        {:https://stackoverflow.com/a/37977740}
     *)
 let divmodf (x : float) (y : float) = (x /. y, x -. (x /. y *. y))
 
 (* Round a number to a specified number of decimal points 
-   https://github.com/dbuenzli/gg/blob/8f761c278d0b2ee2adb94f9fbc033f1bfd76e536/src/gg.ml#L123-L126
+   {:https://github.com/dbuenzli/gg/blob/8f761c278d0b2ee2adb94f9fbc033f1bfd76e536/src/gg.ml#L123-L126}
 *)
 let round_dfrac d x =
   if x -. Float.round x = 0. then

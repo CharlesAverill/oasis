@@ -41,7 +41,7 @@ module Counter = struct
 
       @param a The counter to subtract from
       @param b The counter being subtracted
-      @result The remainder counter
+      @return The remainder counter
   *)
   let subtract (a : 'a t) (b : 'a t) : 'a t =
     List.fold_left
@@ -53,26 +53,8 @@ module Counter = struct
   let total (x : 'a t) : int = sum (values x)
 end
 
-module type Heap_t = functor (OT : Map.OrderedType) -> sig
-  type x = OT.t
-
-  type t = x list
-
-  val parent : t -> int -> int option
-
-  val lefti : t -> int -> int option
-
-  val righti : t -> int -> int option
-
-  val max_heapify : t -> int -> int -> t
-
-  val heapify : x list -> t
-
-  val heap_sort : x list -> x list
-end
-
 (** Binary heap implementation *)
-module Heap : Heap_t =
+module Heap =
 functor
   (OT : Map.OrderedType)
   ->
@@ -173,4 +155,16 @@ module IntOT = struct
   type t = int
 
   let compare = ( - )
+end
+
+module FloatOT = struct
+  type t = float
+
+  let compare = ( -. )
+end
+
+module StringOT = struct
+  type t = string
+
+  let compare = Stdlib.String.compare
 end

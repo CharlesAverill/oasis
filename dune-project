@@ -26,4 +26,6 @@
    (>= 3.17))
   (alcotest :with-test)
   (ocamlformat :with-test)
-  (odoc :with-doc)))
+  (ocamlformat :with-doc)
+  (odoc :with-doc)
+  (sherlodoc :with-doc)))
