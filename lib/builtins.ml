@@ -383,6 +383,16 @@ let range ?(start : int = 0) ?(step : int = 1) j =
 (** Reverse a list *)
 let reversed = List.rev
 
+(** Replace in a [list] by index *)
+let replacei l pos a =
+  List.mapi
+    (fun i x ->
+      if i = pos then
+        a
+      else
+        x )
+    l
+
 (** Reverse a string *)
 let reverse_string s =
   Stdlib.String.init (Stdlib.String.length s) (fun n ->
@@ -414,6 +424,12 @@ let slice l ?(step : int = 1) (start : int) (stop : int) =
 
 (** Swap items at given indices in a list *)
 let swap l i j =
+  let i, j =
+    if i < j then
+      (i, j)
+    else
+      (j, i)
+  in
   if i = j then
     l
   else

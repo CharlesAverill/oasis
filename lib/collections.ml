@@ -63,7 +63,9 @@ functor
 
     type x = OT.t
 
-    type t = x list
+    type t = x option list
+
+    let _oob_option = function None -> failwith "Out of bounds" | Some x -> x
 
     (** Get the index of the parent of the element at index [i] in the heap.
       Returns [None] if [i] is the root or invalid.
@@ -105,17 +107,26 @@ functor
       @param n Effective length of a to process
       @param i The index to enforce heap property from
       @return The adjusted heap *)
-    let rec max_heapify (a : x list) (n : int) (i : int) : 'a list =
+    let rec max_heapify (a : t) (n : int) (i : int) : 'a list =
       match (lefti a i, righti a i) with
       | Some l, Some r ->
           let largest =
-            if l < n && OT.compare (nth a l) (nth a i) > 0 then
+            if
+              l < n
+              && OT.compare (_oob_option (nth a l)) (_oob_option (nth a i)) > 0
+            then
               l
             else
               i
           in
           let largest =
-            if r < n && OT.compare (nth a r) (nth a largest) > 0 then
+            if
+              r < n
+              && OT.compare
+                   (_oob_option (nth a r))
+                   (_oob_option (nth a largest))
+                 > 0
+            then
               r
             else
               largest
@@ -135,7 +146,7 @@ functor
       fst
         (fold_left
            (fun (a, i) _ -> (max_heapify a (length a) i, i - 1))
-           (a, length a / 2)
+           (List.map (fun x -> Some x) a, length a / 2)
            (take ((length a / 2) + 1) a) )
 
     (** Sort a list *)
@@ -148,7 +159,63 @@ functor
           let a = max_heapify a (n - 1) 0 in
           sort a (n - 1)
       in
-      sort (heapify a) (List.length a)
+      fold_left
+        (fun a -> function None -> a | Some x -> a @ [x])
+        []
+        (sort (heapify a) (List.length a))
+
+    (** Increase the value of an item in the heap 
+        
+        @param h The heap to update
+        @param i The index of the heap to update 
+        @param k The new value of [h[i]]
+        @return The updated heap
+        @raise Invalid_Argument if [k < nth h i]
+        @raise Failure if [length h <= i]
+    *)
+    let heap_increase_key (h : t) (i : int) (k : x) : t =
+      if match nth h i with None -> false | Some x -> OT.compare k x < 0 then
+        invalid_arg "heap_increase_key passed a key that is not larger" ;
+      let rec aux h i =
+        match parent h i with
+        | None ->
+            h
+        | Some parent ->
+            if
+              parent >= 0
+              && OT.compare (_oob_option (nth h i)) (_oob_option (nth h parent))
+                 > 0
+            then
+              aux (swap h i parent) parent
+            else
+              h
+      in
+      aux (replacei h i (Some k)) i
+
+    (** Extract the maximum element from a max-heap and return the updated heap.
+
+        @param h The heap
+        @return [Some (max_element, new_heap)] if the heap is non-empty, [None] otherwise
+    *)
+    let extract_max (h : t) : (x * t) option =
+      match h with
+      | [] ->
+          None
+      | x :: y ->
+          Some
+            ( _oob_option x
+            , take (length y)
+                (max_heapify (swap h 0 (length h - 1)) (length h - 1) 0) )
+
+    (** Insert a new key into the max-heap while maintaining the max-heap property.
+
+        @param h The current heap
+        @param k The key to insert
+        @return The updated heap with the new key inserted and the max-heap property restored
+    *)
+    let heap_insert (h : t) (k : x) : t =
+      let h = h @ [None] in
+      heap_increase_key h (length h - 1) k
   end
 
 module IntOT = struct
