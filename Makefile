@@ -67,6 +67,7 @@ docs: cleandocs build
 	sed -i 's/..\/odoc.support/odoc.support/g' $(DOCS_PATH)index.html
 	# Body
 	sed -i "s@<nav class="odoc-nav">.*gbcamel</nav>@@g" $(DOCS_PATH)index.html
+	grep -rlZ "details open=\"open\"" . | xargs -0 sed -i "s/details open=\"open\"/details/g"
 
 	@echo "Fixing search\n-----------------"
 	sed -i 's/search_result.href = base_url + entry.url/search_result.href = \".\/\" + entry.url.substring(\"oasis\/\".length)/g' \
