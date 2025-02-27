@@ -3,6 +3,8 @@
    Distributed under the ISC license, see terms at the end of the file.
    odoc 2.4.4 */
 
+
+
 /* Fonts */
 /* noticia-text-regular - latin */
 @font-face {
@@ -113,6 +115,7 @@
   --target-shadow: rgba(187, 239, 253, 0.8);
   --pre-border-color: #eee;
   --code-background: #f6f8fa;
+  --code-font: "Fira Mono";
 
   --li-code-background: #f6f8fa;
   --li-code-color: #0d2b3e;
@@ -1374,6 +1377,40 @@ td.def-doc *:first-child {
 
 .COMMENT {
   color: #93a1a1;
+}
+
+:is(.parameter,.returns) > span {
+  font-family: var(--code-font), monospace;
+}
+
+:is(.parameter,.returns) > .value {
+  font-family: var(--code-font);
+  font-weight: 400;
+  background-color: var(--li-code-background);
+  color: var(--li-code-color);
+  border-radius: 3px;
+  padding: 0 0.3ex;
+}
+
+:is(.parameter,.returns) > p {
+  margin: 0%;
+  margin-left: 5%;
+}
+
+.odoc-spec {
+  padding: 1%;
+  /* padding-bottom: 0%; */
+  border-radius: 3px;
+  border: thick outset var(--spec-summary-border-color);
+}
+
+.at-tags {
+  margin: 0%;
+}
+
+.odoc-spec > .spec-doc > p {
+  margin: auto;
+  margin-top: 1%;
 }
 
 /*---------------------------------------------------------------------------
