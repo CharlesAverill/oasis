@@ -53,7 +53,7 @@ module Counter = struct
   let total (x : 'a t) : int = sum (values x)
 end
 
-(** Binary heap implementation *)
+(** Binary max heap implementation *)
 module Heap =
 functor
   (OT : Map.OrderedType)
@@ -64,6 +64,8 @@ functor
     type x = OT.t
 
     type t = x option list
+
+    let empty : t = []
 
     let _oob_option = function None -> failwith "Out of bounds" | Some x -> x
 
@@ -100,6 +102,22 @@ functor
         Some ((2 * i) + 2)
       else
         None
+
+    let is_max_heap (h : t) : bool =
+      let len = length h in
+      let rec check i =
+        if i >= len then
+          true
+        else
+          match (lefti h i, righti h i) with
+          | Some left, Some right ->
+              let left_ok = left >= len || List.nth h i >= List.nth h left in
+              let right_ok = right >= len || List.nth h i >= List.nth h right in
+              left_ok && right_ok && check (i + 1)
+          | _, _ ->
+              true
+      in
+      check 0
 
     (** Recursively enforce the max-heap property from a given index.
   
@@ -216,6 +234,25 @@ functor
     let heap_insert (h : t) (k : x) : t =
       let h = h @ [None] in
       heap_increase_key h (length h - 1) k
+
+    (** Merge two heaps into a single heap.
+
+        @param h1 The first heap
+        @param h2 The second heap
+        @return The merged heap
+    *)
+    let heap_merge (h1 : t) (h2 : t) : t =
+      let f = fun a -> function None -> a | Some x -> heap_insert a x in
+      fst
+        (fold_left
+           (fun (acc, h) _ ->
+             match extract_max h with
+             | None ->
+                 (acc, h)
+             | Some (x, h) ->
+                 (acc @ [Some x], h) )
+           (empty, fold_left f (fold_left f empty h1) h2)
+           (range (length h1 + length h2)) )
   end
 
 module IntOT = struct

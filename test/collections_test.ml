@@ -97,7 +97,9 @@ let test_heapify () =
   check
     (list (option int))
     "heapify unsorted list" expected_heap
-    (Heap.heapify unsorted_list)
+    (Heap.heapify unsorted_list) ;
+  check bool "  is still heap" true
+    (Heap.is_max_heap (Heap.heapify unsorted_list))
 
 let test_heap_sort () =
   check (list int) "heap sort" [1; 3; 4; 5; 10] (Heap.heap_sort unsorted_list)
@@ -118,7 +120,8 @@ let test_heap_increase_key_valid () =
   let result = Heap.heap_increase_key sample_heap 0 20 in
   check
     (list (option int))
-    "heap_increase_key with valid key" increased_heap result
+    "heap_increase_key with valid key" increased_heap result ;
+  check bool "  is still heap" true (Heap.is_max_heap result)
 
 let test_heap_increase_key_invalid () =
   check_raises "heap_increase_key with invalid key"
@@ -132,7 +135,8 @@ let test_extract_max_nonempty () =
       check int "extracted max is correct" 16 max_val ;
       check
         (list (option int))
-        "heap after extract_max" expected_after_extract new_heap
+        "heap after extract_max" expected_after_extract new_heap ;
+      check bool "  is still heap" true (Heap.is_max_heap new_heap)
   | None ->
       fail "extract_max returned None for non-empty heap"
 
@@ -152,6 +156,7 @@ let test_extract_max_multiple () =
         "heap after first extract"
         (List.map (fun x -> Some x) [14; 8; 10; 4; 7; 9; 3; 2; 1])
         heap1 ;
+      check bool "  is still heap" true (Heap.is_max_heap heap1) ;
       (* Extract second max *)
       match Heap.extract_max heap1 with
       | Some (max2, heap2) ->
@@ -160,7 +165,8 @@ let test_extract_max_multiple () =
             (list (option int))
             "heap after second extract"
             (List.map (fun x -> Some x) [10; 8; 9; 4; 7; 1; 3; 2])
-            heap2
+            heap2 ;
+          check bool "  is still heap" true (Heap.is_max_heap heap2)
       | None ->
           fail "second extract_max returned None" )
   | None ->
@@ -173,7 +179,8 @@ let test_extract_max_single_element () =
       check int "extracted max from single element" 42 max_val ;
       check
         (list (option int))
-        "heap after extracting single element" [] new_heap
+        "heap after extracting single element" [] new_heap ;
+      check bool "  is still heap" true (Heap.is_max_heap new_heap)
   | None ->
       fail "extract_max returned None for single-element heap"
 
@@ -187,7 +194,8 @@ let test_extract_max_repeated_max () =
         (list (option int))
         "heap after extracting one max"
         (List.map (fun x -> Some x) [16; 8; 10; 7])
-        new_heap
+        new_heap ;
+      check bool "  is still heap" true (Heap.is_max_heap new_heap)
   | None ->
       fail "extract_max returned None with repeated max"
 
@@ -201,7 +209,8 @@ let test_extract_max_sorted () =
         (list (option int))
         "heap after extract from sorted"
         (List.map (fun x -> Some x) [15; 5; 10; 1])
-        new_heap
+        new_heap ;
+      check bool "  is still heap" true (Heap.is_max_heap new_heap)
   | None ->
       fail "extract_max returned None for sorted heap"
 
@@ -218,17 +227,65 @@ let expected_after_insert_5 =
 (* Test inserting into an empty heap *)
 let test_insert_empty () =
   let result = Heap.heap_insert empty_heap 42 in
-  check (list (option int)) "insert into empty heap" [Some 42] result
+  check (list (option int)) "insert into empty heap" [Some 42] result ;
+  check bool "  is still heap" true (Heap.is_max_heap result)
 
 (* Test inserting a larger key that becomes the new root *)
 let test_insert_largest_key () =
   let result = Heap.heap_insert simple_heap 18 in
-  check (list (option int)) "insert largest key" expected_after_insert_18 result
+  check (list (option int)) "insert largest key" expected_after_insert_18 result ;
+  check bool "  is still heap" true (Heap.is_max_heap result)
 
 (* Test inserting a key that doesn't become the new root *)
 let test_insert_non_root_key () =
   let result = Heap.heap_insert simple_heap 5 in
-  check (list (option int)) "insert non-root key" expected_after_insert_5 result
+  check (list (option int)) "insert non-root key" expected_after_insert_5 result ;
+  check bool "  is still heap" true (Heap.is_max_heap result)
+
+let option_int = option int
+
+(* Sample heaps for testing *)
+let heap1 = Heap.heapify [16; 14; 10; 9; 8; 7; 3]
+
+let heap2 = Heap.heapify [20; 17; 12; 11; 5]
+
+let expected_merged =
+  [ Some 20
+  ; Some 17
+  ; Some 16
+  ; Some 14
+  ; Some 12
+  ; Some 11
+  ; Some 10
+  ; Some 9
+  ; Some 8
+  ; Some 7
+  ; Some 5
+  ; Some 3 ]
+
+let merge_successful merged h1 h2 =
+  Heap.is_max_heap merged
+  && List.for_all (fun i -> List.exists (( = ) i) merged) h1
+  && List.for_all (fun i -> List.exists (( = ) i) merged) h2
+
+let test_merge_heaps () =
+  let result = Heap.heap_merge heap1 heap2 in
+  check bool "heap_merge two heaps" true (merge_successful result heap1 heap2)
+
+let test_merge_empty () =
+  let result = Heap.heap_merge [] heap1 in
+  check bool "heap_merge with empty heap" true
+    (merge_successful result [] heap1)
+
+let test_merge_both_empty () =
+  let result = Heap.heap_merge [] [] in
+  check bool "heap_merge two empty heaps" true (merge_successful result [] [])
+
+let test_merge_singleton () =
+  let result = Heap.heap_merge [Some 42] heap1 in
+  let expected = Heap.heap_insert heap1 42 in
+  check bool "heap_merge singleton with heap" true
+    (merge_successful result heap1 [Some 42])
 
 let () =
   let open Alcotest in
@@ -262,4 +319,9 @@ let () =
         ; test_case "Sorted heap" `Quick test_extract_max_sorted
         ; test_case "insert into empty heap" `Quick test_insert_empty
         ; test_case "insert largest key" `Quick test_insert_largest_key
-        ; test_case "insert non-root key" `Quick test_insert_non_root_key ] ) ]
+        ; test_case "insert non-root key" `Quick test_insert_non_root_key
+        ; test_case "Merge two heaps" `Quick test_merge_heaps
+        ; test_case "Merge with empty heap" `Quick test_merge_empty
+        ; test_case "Merge two empty heaps" `Quick test_merge_both_empty
+        ; test_case "Merge singleton with heap" `Quick test_merge_singleton ] )
+    ]
