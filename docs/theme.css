@@ -644,7 +644,7 @@ div.def-doc>*:first-child {
   display: none;
 }
 
-.odoc-include details:after {
+/* .odoc-include details:after {
   z-index: -100;
   display: block;
   content: " ";
@@ -656,13 +656,17 @@ div.def-doc>*:first-child {
   width: 15px;
   background: var(--spec-details-after-background, rgba(0, 4, 15, 0.05));
   box-shadow: 0 0px 0 1px var(--spec-details-after-shadow, rgba(204, 204, 204, 0.53));
-}
+} */
 
 .odoc-include summary {
   position: relative;
-  margin-bottom: 1em;
+  /* margin-bottom: 1em; */
   cursor: pointer;
   outline: none;
+}
+
+.odoc-include > details > .odoc-spec {
+  margin-top: 1em;
 }
 
 .odoc-include summary:hover {
@@ -1397,7 +1401,7 @@ td.def-doc *:first-child {
   margin-left: 5%;
 }
 
-.odoc-spec {
+.odoc-spec, .odoc-include {
   padding: 1%;
   /* padding-bottom: 0%; */
   border-radius: 3px;
